@@ -51,7 +51,7 @@ export default function Attendance() {
       .post(
         "http://localhost:3000/users/attendance",
         {
-          time_out: new Date(),
+          time_out: new Date().toLocaleTimeString(),
         },
         {
           headers: {

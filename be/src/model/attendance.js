@@ -22,8 +22,8 @@ const attendanceSchema = new mongoose.Schema(
     time_out: {
       type: Date,
       validate: (value) => {
-        //max time out is 6pm
-        if (value.getHours() > 22) {
+        // max time out is 6pm
+        if (value.getHours() > 19) {
           throw new Error({ error: "Invalid Time Out" });
         }
       },

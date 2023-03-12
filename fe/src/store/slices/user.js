@@ -7,10 +7,9 @@ const BASE_URl = "http://localhost:3000";
 export const login = createAsyncThunk("users/login", async (data, thunkAPI) => {
   try {
     const response = await axios.post(`${BASE_URl}/users/login`, data);
-    const { token } = response.data;
-    const decoded = jwt_decode(token);
-    Cookies.set("token", token);
-    return decoded;
+
+    Cookies.set("token", response.data.token);
+    return response.data;
   } catch (error) {
     return thunkAPI.rejectWithValue(error.response.data);
   }
@@ -21,10 +20,8 @@ export const register = createAsyncThunk(
   async (data, thunkAPI) => {
     try {
       const response = await axios.post(`${BASE_URl}/users`, data);
-      const { token } = response.data;
-      const decoded = jwt_decode(token);
-      Cookies.set("token", token);
-      return decoded;
+      Cookies.set("token", response.data.token);
+      return response.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(error.response.data);
     }
@@ -36,7 +33,7 @@ export const logout = createAsyncThunk(
   async (data, thunkAPI) => {
     try {
       const response = await axios.post(`${BASE_URl}/users/logout`);
-      Cookies.remove("token");
+      Cookies.remove("token", { path: "/", domain: "localhost" });
       return response.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(error.response.data);
@@ -46,8 +43,8 @@ export const logout = createAsyncThunk(
 
 const initialState = {
   loading: false,
-  userInfo: Cookies.get("token") ? jwt_decode(Cookies.get("token")) : null,
-  userToken: Cookies.get("token") ? Cookies.get("token") : null,
+  userInfo: null,
+  userToken: null,
   error: null,
   success: false,
 };
@@ -66,7 +63,8 @@ const userSlice = createSlice({
     },
     [login.fulfilled]: (state, action) => {
       state.loading = false;
-      state.userInfo = action.payload;
+      state.userInfo = action.payload.user;
+      state.userToken = action.payload.token;
       state.success = true;
     },
     [login.rejected]: (state, action) => {
@@ -80,7 +78,6 @@ const userSlice = createSlice({
       state.loading = false;
       state.userInfo = action.payload.user;
       state.userToken = action.payload.token;
-      Cookies.set("token", action.payload.accessToken, { expires: 1 });
       state.success = true;
     },
     [register.rejected]: (state, action) => {
@@ -93,6 +90,8 @@ const userSlice = createSlice({
     [logout.fulfilled]: (state, action) => {
       state.loading = false;
       state.userInfo = null;
+      state.userToken = null;
+
       state.success = true;
     },
     [logout.rejected]: (state, action) => {

@@ -9,12 +9,14 @@ import Authenticated from "./components/authed";
 import Attendance from "./pages/attendace";
 import Reimbursement from "./pages/Reimbursement";
 import Overtime from "./pages/overtime";
+import Register from "./pages/register";
 
 function App() {
   return (
     <>
       <Routes>
         <Route path="/" element={<Login />} />
+        <Route path="/register" element={<Register />} />
 
         <Route element={<Authenticated />}>
           <Route element={<Layout />}>

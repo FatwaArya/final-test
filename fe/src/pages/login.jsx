@@ -2,18 +2,26 @@ import { useState, React } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { login } from "../store/slices/user";
+import { useEffect } from "react";
+import { Link } from "react-router-dom";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { error, success } = useSelector((state) => state);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     dispatch(login({ email, password }));
-    navigate("/dashboard");
   };
+
+  useEffect(() => {
+    if (success) {
+      navigate("/dashboard");
+    }
+  }, [success, navigate]);
 
   return (
     <>
@@ -185,13 +193,15 @@ export default function Login() {
                         </label>
                       </div>
 
-                      <div className="text-sm">
-                        <a
-                          href="#"
-                          className="font-medium text-indigo-600 hover:text-indigo-500"
-                        >
-                          Forgot your password?
-                        </a>
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm">
+                          <Link
+                            to="/register"
+                            className="font-medium text-indigo-600 hover:text-indigo-500"
+                          >
+                            Dont have an account?
+                          </Link>
+                        </div>
                       </div>
                     </div>
 

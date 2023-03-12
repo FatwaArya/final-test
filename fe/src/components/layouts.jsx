@@ -160,7 +160,7 @@ export default function Layout() {
                           "group flex items-center px-2 py-2 text-base font-medium rounded-md"
                         )}
                         onClick={() => {
-                          if (item.name === "Logout") {
+                          if (item.name === "Sign Out") {
                             dispatch(logout());
                           }
                         }}
@@ -232,7 +232,7 @@ export default function Layout() {
                       "group flex items-center px-2 py-2 text-sm font-medium rounded-md"
                     )}
                     onClick={() => {
-                      if (item.name === "Logout") {
+                      if (item.name === "Sign Out") {
                         dispatch(logout());
                       }
                     }}

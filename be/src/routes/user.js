@@ -158,33 +158,24 @@ router.get("/users/attendance", auth, async (req, res) => {
 router.post("/users/attendance", auth, async (req, res) => {
   const { time_in, time_out } = req.body;
   try {
-    //user cant submit attendance for time in and time out at the same time or submit time out before time in
-    if (time_in && time_out) {
-      return res.status(400).send({ error: "Invalid time" });
-    }
-    if (time_out && time_in === null) {
-      return res.status(400).send({ error: "Invalid time" });
-    }
-    //user can only submit 2 time everyday
+    //time in and time out can only be done once a day
     const attendance = await Attendance.findOne({
       user: req.user._id,
+      createdAt: {
+        $gte: new Date(new Date().setHours(0, 0, 0)),
+        $lt: new Date(new Date().setHours(23, 59, 59)),
+      },
     });
-    if (attendance && attendance.time_in && attendance.time_out) {
-      return res.status(400).send({ error: "You have submitted attendance" });
+    if (attendance) {
+      return res.status(400).send({ error: "Attendance already taken" });
     }
-
-    if (attendance && attendance.time_in && !attendance.time_out) {
-      attendance.time_out = time_out;
-      await attendance.save();
-      return res.status(201).send({ attendance });
-    }
-
     const attendanceRequest = new Attendance({
       user: req.user._id,
       time_in: time_in,
       time_out: time_out,
     });
     await attendanceRequest.save();
+
     res.status(201).send({ attendanceRequest });
   } catch (error) {
     console.log(error.message);
