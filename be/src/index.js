@@ -3,6 +3,7 @@ const app = express();
 const { userRouter } = require("./routes/user");
 const { hrRouter } = require("./routes/hr");
 const { menuRouter } = require("./routes/menu");
+const { emailNotif } = require("./schedule/email");
 require("dotenv").config({ path: "./.env" });
 require("./db/mongoose");
 
@@ -20,6 +21,7 @@ app.use(
 app.use(userRouter);
 app.use(hrRouter);
 app.use(menuRouter);
+emailNotif.invoke();
 
 app.listen(3000, () => {
   console.log("Example app listening on port 3000!");
