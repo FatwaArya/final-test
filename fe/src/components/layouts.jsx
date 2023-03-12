@@ -2,14 +2,10 @@
 import { Fragment, useState, useEffect } from "react";
 import axios from "axios";
 import { Dialog, Transition } from "@headlessui/react";
-import { useSelector } from "react-redux";
-import {
-  Link,
-  Outlet,
-  useSearchParams,
-  useParams,
-  useLocation,
-} from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { logout } from "../store/slices/user";
+import { Link, Outlet, useNavigate, useLocation } from "react-router-dom";
+import Cookies from "js-cookie";
 import {
   CalendarIcon,
   ChartBarIcon,
@@ -28,16 +24,21 @@ import {
   ClipboardDocumentCheckIcon,
   NewspaperIcon,
   PencilSquareIcon,
+  ArrowLeftOnRectangleIcon,
 } from "@heroicons/react/24/outline";
+import * as HIcons from "@heroicons/react/24/outline";
 
-// const navigation = [
-//   { name: "Dashboard", href: "#", icon: HomeIcon, current: true },
-//   { name: "Team", href: "#", icon: UsersIcon, current: false },
-//   { name: "Projects", href: "#", icon: FolderIcon, current: false },
-//   { name: "Calendar", href: "#", icon: CalendarIcon, current: false },
-//   { name: "Documents", href: "#", icon: InboxIcon, current: false },
-//   { name: "Reports", href: "#", icon: ChartBarIcon, current: false },
-// ];
+const DynamicHeroIcon = (props) => {
+  const { ...icons } = HIcons;
+
+  const TheIcon = icons[props.icon];
+
+  return (
+    <>
+      <TheIcon className="h-6 w-6 text-white" aria-hidden="true" {...props} />
+    </>
+  );
+};
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -46,41 +47,37 @@ function classNames(...classes) {
 export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [navigation, setNavigation] = useState([]);
+  const { userInfo } = useSelector((state) => state);
   const { userToken } = useSelector((state) => state);
+  const navigate = useNavigate();
   const asPath = useLocation();
-
+  const token = Cookies.get("token");
+  //if jwt is not set, or is expired, redirect to login
+  useEffect(() => {
+    if (token === undefined) {
+      navigate("/login");
+    }
+  }, [token]);
   useEffect(() => {
     async function getNavigation() {
       console.log(userToken);
-      //use axios to get the navigation bearer token
       const response = await axios.get("http://localhost:3000/menu", {
         headers: {
           Authorization: `Bearer ${userToken}`,
         },
       });
       const result = response.data;
-      //add current to result and sort it
-      result.forEach((item) => {
-        item.current = false;
-      });
       result.sort((a, b) => a.order - b.order);
+      result.forEach((item) => {
+        if (asPath.pathname === item.link) {
+          item.current = true;
+        }
+      });
 
       setNavigation(result);
     }
     getNavigation();
-
-    if (asPath) {
-      const newNavigation = navigation.map((nav) => {
-        return {
-          ...nav,
-          current: nav.href === asPath.pathname,
-        };
-      });
-      setNavigation(newNavigation);
-    }
-  }, []);
-
-  console.log(navigation);
+  }, [asPath]);
 
   return (
     <>
@@ -155,22 +152,27 @@ export default function Layout() {
                     {navigation.map((item) => (
                       <Link
                         key={item.name}
-                        href={item.href}
+                        to={item.link}
                         className={classNames(
                           item.current
                             ? "bg-gray-100 text-gray-900"
                             : "text-gray-600 hover:bg-gray-50 hover:text-gray-900",
                           "group flex items-center px-2 py-2 text-base font-medium rounded-md"
                         )}
+                        onClick={() => {
+                          if (item.name === "Logout") {
+                            dispatch(logout());
+                          }
+                        }}
                       >
-                        <item.icon
+                        <DynamicHeroIcon
+                          icon={item.icon}
                           className={classNames(
                             item.current
                               ? "text-gray-500"
                               : "text-gray-400 group-hover:text-gray-500",
-                            "mr-4 flex-shrink-0 h-6 w-6"
+                            "mr-3 flex-shrink-0 h-6 w-6"
                           )}
-                          aria-hidden="true"
                         />
                         {item.name}
                       </Link>
@@ -189,7 +191,7 @@ export default function Layout() {
                       </div>
                       <div className="ml-3">
                         <p className="text-base font-medium text-gray-700 group-hover:text-gray-900">
-                          Tom Cook
+                          {userInfo.name}
                         </p>
                         <p className="text-sm font-medium text-gray-500 group-hover:text-gray-700">
                           View profile
@@ -222,15 +224,20 @@ export default function Layout() {
                 {navigation.map((item) => (
                   <Link
                     key={item.name}
-                    href={item.link}
+                    to={item.link}
                     className={classNames(
                       item.current
                         ? "bg-gray-100 text-gray-900"
                         : "text-gray-600 hover:bg-gray-50 hover:text-gray-900",
                       "group flex items-center px-2 py-2 text-sm font-medium rounded-md"
                     )}
+                    onClick={() => {
+                      if (item.name === "Logout") {
+                        dispatch(logout());
+                      }
+                    }}
                   >
-                    <item.icon
+                    {/* <item.icon
                       className={classNames(
                         item.current
                           ? "text-gray-500"
@@ -238,6 +245,16 @@ export default function Layout() {
                         "mr-3 flex-shrink-0 h-6 w-6"
                       )}
                       aria-hidden="true"
+                    /> */}
+
+                    <DynamicHeroIcon
+                      icon={item.icon}
+                      className={classNames(
+                        item.current
+                          ? "text-gray-500"
+                          : "text-gray-400 group-hover:text-gray-500",
+                        "mr-3 flex-shrink-0 h-6 w-6"
+                      )}
                     />
 
                     {item.name}
@@ -257,7 +274,7 @@ export default function Layout() {
                   </div>
                   <div className="ml-3">
                     <p className="text-sm font-medium text-gray-700 group-hover:text-gray-900">
-                      Tom Cook
+                      {userInfo.name}
                     </p>
                     <p className="text-xs font-medium text-gray-500 group-hover:text-gray-700">
                       View profile
@@ -284,16 +301,16 @@ export default function Layout() {
               <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
                 <h1 className="text-2xl font-semibold text-gray-900">
                   {
-                    navigation.find((item) => item.href === location.pathname)
+                    navigation.find((item) => item.link === location.pathname)
                       ?.name
                   }
                 </h1>
               </div>
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-                {/* Replace with your content */}
-                <Outlet />
-                {/* /End replace */}
-              </div>
+              {/* <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8"> */}
+              {/* Replace with your content */}
+              <Outlet />
+              {/* /End replace */}
+              {/* </div> */}
             </div>
           </main>
         </div>

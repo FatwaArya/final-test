@@ -3,6 +3,7 @@ const User = require("../model/user");
 const Attendance = require("../model/attendance");
 const Overtime = require("../model/overtime");
 const Reimbursment = require("../model/reimbursment");
+const Announcement = require("../model/announcement");
 const router = express.Router();
 const auth = require("../middleware/auth");
 const nodeMailer = require("nodemailer");
@@ -80,9 +81,9 @@ router.post("/users/overtime", auth, async (req, res) => {
   try {
     //find user with role hr and send email
     const hr = await User.findOne({ role: "hr" });
-    console.log(req.employee);
+    console.log(req.user);
     const overtimeRequest = new Overtime({
-      user: req.employee._id,
+      user: req.user._id,
       date: new Date(),
       start_time: startTime,
       end_time: endTime,
@@ -95,7 +96,7 @@ router.post("/users/overtime", auth, async (req, res) => {
       from: process.env.EMAIL_SERVER_USER,
       to: hr.email,
       subject: "Overtime Request",
-      text: `Hi ${hr.name}, ${req.employee.name} has requested for overtime. Please login to your account to approve or reject the request.`,
+      text: `Hi ${hr.name}, ${req.user.name} has requested for overtime. Please login to your account to approve or reject the request.`,
     };
     transporter.sendMail(mailOptions, function (error, info) {
       if (error) {
@@ -116,9 +117,9 @@ router.post("/users/reimbursment", auth, async (req, res) => {
   try {
     //find user with role hr and send email
     const hr = await User.findOne({ role: "hr" });
-    console.log(req.employee);
+    console.log(req.user);
     const reimbursmentRequest = new Reimbursment({
-      user: req.employee._id,
+      user: req.user._id,
       date: new Date(),
       amount: amount,
       reason: reason,
@@ -130,7 +131,7 @@ router.post("/users/reimbursment", auth, async (req, res) => {
       from: process.env.EMAIL_SERVER_USER,
       to: hr.email,
       subject: "Reimbursment Request",
-      text: `Hi ${hr.name}, ${req.employee.name} has requested for reimbursment. Please login to your account to approve or reject the request.`,
+      text: `Hi ${hr.name}, ${req.user.name} has requested for reimbursment. Please login to your account to approve or reject the request.`,
     };
     transporter.sendMail(mailOptions, function (error, info) {
       if (error) {
@@ -141,6 +142,15 @@ router.post("/users/reimbursment", auth, async (req, res) => {
     });
   } catch (error) {
     console.log(error.message);
+    res.status(500).send();
+  }
+});
+//get attendance
+router.get("/users/attendance", auth, async (req, res) => {
+  try {
+    const attendance = await Attendance.find({ user: req.user._id });
+    res.send(attendance);
+  } catch (error) {
     res.status(500).send();
   }
 });
@@ -155,9 +165,14 @@ router.post("/users/attendance", auth, async (req, res) => {
     if (time_out && time_in === null) {
       return res.status(400).send({ error: "Invalid time" });
     }
+    //user can only submit 2 time everyday
+    const attendance = await Attendance.findOne({
+      user: req.user._id,
+    });
+    if (attendance && attendance.time_in && attendance.time_out) {
+      return res.status(400).send({ error: "You have submitted attendance" });
+    }
 
-    //if user has already submitted attendance for time in update time out
-    const attendance = await Attendance.findOne({ user: req.employee._id });
     if (attendance && attendance.time_in && !attendance.time_out) {
       attendance.time_out = time_out;
       await attendance.save();
@@ -165,7 +180,7 @@ router.post("/users/attendance", auth, async (req, res) => {
     }
 
     const attendanceRequest = new Attendance({
-      user: req.employee._id,
+      user: req.user._id,
       time_in: time_in,
       time_out: time_out,
     });
@@ -173,14 +188,14 @@ router.post("/users/attendance", auth, async (req, res) => {
     res.status(201).send({ attendanceRequest });
   } catch (error) {
     console.log(error.message);
-    res.status(500).send();
+    res.status(500).send(error.message);
   }
 });
 
 //get overtime history
 router.get("/users/overtime", auth, async (req, res) => {
   try {
-    const overtime = await Overtime.find({ user: req.employee._id });
+    const overtime = await Overtime.find({ user: req.user._id });
     res.send(overtime);
   } catch (error) {
     res.status(500).send();
@@ -190,7 +205,7 @@ router.get("/users/overtime", auth, async (req, res) => {
 //get reimbursment history
 router.get("/users/reimbursment", auth, async (req, res) => {
   try {
-    const reimbursment = await Reimbursment.find({ user: req.employee._id });
+    const reimbursment = await Reimbursment.find({ user: req.user._id });
     res.send(reimbursment);
   } catch (error) {
     res.status(500).send();
@@ -200,8 +215,18 @@ router.get("/users/reimbursment", auth, async (req, res) => {
 //get overtime history
 router.get("/users/attendance", auth, async (req, res) => {
   try {
-    const attendance = await Attendance.find({ user: req.employee._id });
+    const attendance = await Attendance.find({ user: req.user._id });
     res.send(attendance);
+  } catch (error) {
+    res.status(500).send();
+  }
+});
+
+//get announcement
+router.get("/users/announcements", auth, async (req, res) => {
+  try {
+    const announcement = await Announcement.find();
+    res.send(announcement);
   } catch (error) {
     res.status(500).send();
   }

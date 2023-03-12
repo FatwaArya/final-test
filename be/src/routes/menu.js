@@ -6,10 +6,9 @@ const auth = require("../middleware/auth");
 //get all menu
 router.get("/menu", auth, async (req, res) => {
   try {
-    console.log(req.hr.role);
     const menu = await Menu.find({
       roles: {
-        $in: [req.hr.role === undefined ? "hr" : req.hr.role],
+        $in: [req.user.role],
       },
     });
     res.send(menu);

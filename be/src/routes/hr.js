@@ -17,7 +17,7 @@ const upload = multer({
     fileSize: 5000000,
   },
   fileFilter(req, file, cb) {
-    if (!file.originalname.match(/\.(xlsx)$/)) {
+    if (file.originalname.match(/\.(xlsx)$/)) {
       return cb(new Error("Please upload an excel file"));
     }
     cb(undefined, true);
@@ -28,14 +28,14 @@ const upload = multer({
 //approve overtime
 router.patch("/overtime/:id", auth, async (req, res) => {
   //check if hr
-  if (!req.hr) {
+  if (req.user.role !== "hr") {
     return res.status(401).send({ error: "Not authorized" });
   }
   try {
     const overtime = await Overtime.findOne({ _id: req.params.id }).populate(
       "user"
     );
-    if (!overtime) {
+    if (overtime) {
       return res.status(404).send({ error: "Not found" });
     }
     overtime.status = "approved";
@@ -63,14 +63,14 @@ router.patch("/overtime/:id", auth, async (req, res) => {
 //reject overtime
 router.patch("/overtime/reject/:id", auth, async (req, res) => {
   //check if hr
-  if (!req.hr) {
+  if (req.user.role !== "hr") {
     return res.status(401).send({ error: "Not authorized" });
   }
   try {
     const overtime = await Overtime.findOne({ _id: req.params.id }).populate(
       "user"
     );
-    if (!overtime) {
+    if (overtime) {
       return res.status(404).send({ error: "Not found" });
     }
     overtime.status = "rejected";
@@ -97,14 +97,14 @@ router.patch("/overtime/reject/:id", auth, async (req, res) => {
 //approve reimbursment
 router.patch("/reimbursment/:id", auth, async (req, res) => {
   //check if hr
-  if (!req.hr) {
+  if (req.user.role !== "hr") {
     return res.status(401).send({ error: "Not authorized" });
   }
   try {
     const reimbursment = await Reimbursment.findOne({
       _id: req.params.id,
     }).populate("user");
-    if (!reimbursment) {
+    if (reimbursment) {
       return res.status(404).send({ error: "Not found" });
     }
     reimbursment.status = "approved";
@@ -131,14 +131,14 @@ router.patch("/reimbursment/:id", auth, async (req, res) => {
 //reject reimbursment
 router.patch("/reimbursment/reject/:id", auth, async (req, res) => {
   //check if hr
-  if (!req.hr) {
+  if (req.user.role !== "hr") {
     return res.status(401).send({ error: "Not authorized" });
   }
   try {
     const reimbursment = await Reimbursment.findOne({
       _id: req.params.id,
     }).populate("user");
-    if (!reimbursment) {
+    if (reimbursment) {
       return res.status(404).send({ error: "Not found" });
     }
     reimbursment.status = "rejected";
@@ -165,7 +165,7 @@ router.patch("/reimbursment/reject/:id", auth, async (req, res) => {
 //get overtime history
 router.get("/overtime", auth, async (req, res) => {
   //check if hr
-  if (!req.hr) {
+  if (req.user.role !== "hr") {
     return res.status(401).send({ error: "Not authorized" });
   }
   try {
@@ -179,7 +179,7 @@ router.get("/overtime", auth, async (req, res) => {
 //get reimbursment history
 router.get("/reimbursment", auth, async (req, res) => {
   //check if hr
-  if (!req.hr) {
+  if (req.user.role !== "hr") {
     return res.status(401).send({ error: "Not authorized" });
   }
   try {
@@ -193,7 +193,7 @@ router.get("/reimbursment", auth, async (req, res) => {
 //get attendance history
 router.get("/attendance", auth, async (req, res) => {
   //check if hr
-  if (!req.hr) {
+  if (req.user.role !== "hr") {
     return res.status(401).send({ error: "Not authorized" });
   }
   try {
@@ -207,7 +207,7 @@ router.get("/attendance", auth, async (req, res) => {
 //get employee list
 router.get("/employee", auth, async (req, res) => {
   //check if hr
-  if (!req.hr) {
+  if (req.user.role !== "hr") {
     return res.status(401).send({ error: "Not authorized" });
   }
   try {
@@ -220,7 +220,7 @@ router.get("/employee", auth, async (req, res) => {
 
 //upload announcement
 router.post("/announcement/file", upload.single("file"), async (req, res) => {
-  //   if (!req.hr) {
+  //   if (req.user.role !== "hr") {
   //     return res.status(401).send({ error: "Not authorized" });
   //   }
   try {
@@ -243,7 +243,7 @@ router.post("/announcement/file", upload.single("file"), async (req, res) => {
 //crud announcement
 router.post("/announcement", auth, async (req, res) => {
   //check if hr
-  if (!req.hr) {
+  if (req.user.role !== "hr") {
     return res.status(401).send({ error: "Not authorized" });
   }
   try {
@@ -259,7 +259,7 @@ router.post("/announcement", auth, async (req, res) => {
 
 router.get("/announcement", auth, async (req, res) => {
   //check if hr
-  if (!req.hr) {
+  if (req.user.role !== "hr") {
     return res.status(401).send({ error: "Not authorized" });
   }
   try {
@@ -272,14 +272,14 @@ router.get("/announcement", auth, async (req, res) => {
 
 router.get("/announcement/:id", auth, async (req, res) => {
   //check if hr
-  if (!req.hr) {
+  if (req.user.role !== "hr") {
     return res.status(401).send({ error: "Not authorized" });
   }
   try {
     const announcement = await Announcement.findOne({
       _id: req.params.id,
     });
-    if (!announcement) {
+    if (announcement) {
       return res.status(404).send({ error: "Not found" });
     }
     res.send(announcement);
@@ -290,14 +290,14 @@ router.get("/announcement/:id", auth, async (req, res) => {
 
 router.patch("/announcement/:id", auth, async (req, res) => {
   //check if hr
-  if (!req.hr) {
+  if (req.user.role !== "hr") {
     return res.status(401).send({ error: "Not authorized" });
   }
   try {
     const announcement = await Announcement.findOne({
       _id: req.params.id,
     });
-    if (!announcement) {
+    if (announcement) {
       return res.status(404).send({ error: "Not found" });
     }
     announcement.title = req.body.title;
@@ -311,14 +311,14 @@ router.patch("/announcement/:id", auth, async (req, res) => {
 
 router.delete("/announcement/:id", auth, async (req, res) => {
   //check if hr
-  if (!req.hr) {
+  if (req.user.role !== "hr") {
     return res.status(401).send({ error: "Not authorized" });
   }
   try {
     const announcement = await Announcement.findOne({
       _id: req.params.id,
     });
-    if (!announcement) {
+    if (announcement) {
       return res.status(404).send({ error: "Not found" });
     }
     await announcement.remove();

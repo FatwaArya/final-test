@@ -29,6 +29,10 @@ const menuSchema = new mongoose.Schema({
     type: [String],
     required: true,
   },
+  current: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const Menu = mongoose.model("Menu", menuSchema);
