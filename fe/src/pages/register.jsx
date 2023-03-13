@@ -13,12 +13,8 @@ export default function Register() {
   const handleSubmit = (e) => {
     e.preventDefault();
     dispatch(register({ email, password, name }));
+    navigate("/dashboard");
   };
-  useEffect(() => {
-    if (success) {
-      navigate("/dashboard");
-    }
-  }, [success, navigate]);
 
   return (
     <>

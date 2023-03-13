@@ -9,6 +9,7 @@ const auth = require("../middleware/auth");
 const { transporter } = require("./user");
 const multer = require("multer");
 const xlsx = require("xlsx");
+const { redisClient } = require("../db/redis");
 
 //upload excel file
 const upload = multer({
@@ -164,8 +165,13 @@ router.get("/overtime", auth, async (req, res) => {
     return res.status(401).send({ error: "Not authorized" });
   }
   try {
-    const overtime = await Overtime.find().populate("user");
-    res.send(overtime);
+    redisClient.get("overtime-history", async (err, result) => {
+      if (err) return res.status(500).send({ error: err.message });
+      if (result) return res.send(JSON.parse(result));
+      const overtime = await Overtime.find().populate("user");
+      redisClient.setex("overtime-history", 3600, JSON.stringify(overtime));
+      res.send(overtime);
+    });
   } catch (error) {
     res.status(500).send();
   }
@@ -178,8 +184,17 @@ router.get("/reimbursment", auth, async (req, res) => {
     return res.status(401).send({ error: "Not authorized" });
   }
   try {
-    const reimbursment = await Reimbursment.find().populate("user");
-    res.send(reimbursment);
+    redisClient.get("reimbursment-history", async (err, result) => {
+      if (err) return res.status(500).send({ error: err.message });
+      if (result) return res.send(JSON.parse(result));
+      const reimbursment = await Reimbursment.find().populate("user");
+      redisClient.setex(
+        "reimbursment-history",
+        3600,
+        JSON.stringify(reimbursment)
+      );
+      res.send(reimbursment);
+    });
   } catch (error) {
     res.status(500).send();
   }
@@ -192,8 +207,13 @@ router.get("/attendance", auth, async (req, res) => {
     return res.status(401).send({ error: "Not authorized" });
   }
   try {
-    const attendance = await Attendance.find();
-    res.send(attendance);
+    redisClient.get("attendance-history", async (err, result) => {
+      if (err) return res.status(500).send({ error: err.message });
+      if (result) return res.send(JSON.parse(result));
+      const attendance = await Attendance.find().populate("user");
+      redisClient.setex("attendance-history", 3600, JSON.stringify(attendance));
+      res.send(attendance);
+    });
   } catch (error) {
     res.status(500).send();
   }
@@ -265,8 +285,13 @@ router.get("/announcement", auth, async (req, res) => {
     return res.status(401).send({ error: "Not authorized" });
   }
   try {
-    const announcement = await Announcement.find();
-    res.send(announcement);
+    redisClient.get("announcement-hr", async (err, result) => {
+      if (err) return res.status(500).send({ error: err.message });
+      if (result) return res.send(JSON.parse(result));
+      const announcement = await Announcement.find();
+      redisClient.setex("announcement-hr", 3600, JSON.stringify(announcement));
+      res.send(announcement);
+    });
   } catch (error) {
     res.status(500).send();
   }

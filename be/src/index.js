@@ -4,9 +4,11 @@ const { userRouter } = require("./routes/user");
 const { hrRouter } = require("./routes/hr");
 const { menuRouter } = require("./routes/menu");
 const { emailNotif } = require("./shedule/email");
+const { redisConnection } = require("./db/redis");
 require("dotenv").config({ path: "./.env" });
 require("./db/mongoose");
 
+redisConnection();
 //seed menu data
 
 const cors = require("cors");

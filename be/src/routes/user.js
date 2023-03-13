@@ -7,6 +7,7 @@ const Announcement = require("../model/announcement");
 const router = express.Router();
 const auth = require("../middleware/auth");
 const nodeMailer = require("nodemailer");
+const { redisClient } = require("../db/redis");
 
 const transporter = nodeMailer.createTransport({
   host: "sandbox.smtp.mailtrap.io",
@@ -148,8 +149,13 @@ router.post("/users/reimbursment", auth, async (req, res) => {
 //get attendance
 router.get("/users/attendance", auth, async (req, res) => {
   try {
-    const attendance = await Attendance.find({ user: req.user._id });
-    res.send(attendance);
+    redisClient.get("attendance", async (err, result) => {
+      if (err) return res.status(500).send({ error: err.message });
+      if (result) return res.status(200).send(JSON.parse(result));
+      const attendance = await Attendance.find({ user: req.user._id });
+      redisClient.setex("attendance", 3600, JSON.stringify(attendance));
+      res.status(200).send({ attendance });
+    });
   } catch (error) {
     res.status(500).send();
   }
@@ -186,8 +192,13 @@ router.post("/users/attendance", auth, async (req, res) => {
 //get overtime history
 router.get("/users/overtime", auth, async (req, res) => {
   try {
-    const overtime = await Overtime.find({ user: req.user._id });
-    res.send(overtime);
+    redisClient.get("overtime-employee", async (err, result) => {
+      if (err) return res.status(500).send({ error: err.message });
+      if (result) return res.status(200).send(JSON.parse(result));
+      const overtime = await Overtime.find({ user: req.user._id });
+      redisClient.setex("overtime-employee", 3600, JSON.stringify(overtime));
+      res.status(200).send({ overtime });
+    });
   } catch (error) {
     res.status(500).send();
   }
@@ -196,8 +207,20 @@ router.get("/users/overtime", auth, async (req, res) => {
 //get reimbursment history
 router.get("/users/reimbursment", auth, async (req, res) => {
   try {
-    const reimbursment = await Reimbursment.find({ user: req.user._id });
-    res.send(reimbursment);
+    redisClient.get("reimbursment-employee", async (err, result) => {
+      if (err) return res.status(500).send({ error: err.message });
+      if (result) return res.status(200).send(JSON.parse(result));
+      const reimbursment = await Reimbursment.find({
+        user: req.user._id,
+      });
+      console.log(reimbursment);
+      redisClient.setex(
+        "reimbursment-employee",
+        3600,
+        JSON.stringify(reimbursment)
+      );
+      res.status(200).send({ reimbursment });
+    });
   } catch (error) {
     res.status(500).send();
   }
@@ -206,8 +229,17 @@ router.get("/users/reimbursment", auth, async (req, res) => {
 //get overtime history
 router.get("/users/attendance", auth, async (req, res) => {
   try {
-    const attendance = await Attendance.find({ user: req.user._id });
-    res.send(attendance);
+    redisClient.get("attendance-employee", async (err, result) => {
+      if (err) return res.status(500).send({ error: err.message });
+      if (result) return res.status(200).send(JSON.parse(result));
+      const attendance = await Attendance.find({ user: req.user._id });
+      redisClient.setex(
+        "attendance-employee",
+        3600,
+        JSON.stringify(attendance)
+      );
+      res.status(200).send({ attendance });
+    });
   } catch (error) {
     res.status(500).send();
   }
@@ -216,10 +248,13 @@ router.get("/users/attendance", auth, async (req, res) => {
 //get announcement
 router.get("/users/announcements", auth, async (req, res) => {
   try {
-    //sort by date
-    const announcement = await Announcement.find({}).sort({ createdAt: -1 });
-
-    res.send(announcement);
+    redisClient.get("announcements", async (err, result) => {
+      if (err) return res.status(500).send({ error: err.message });
+      if (result) return res.status(200).send(JSON.parse(result));
+      const announcements = await Announcement.find().sort({ createdAt: -1 });
+      redisClient.setex("announcements", 3600, JSON.stringify(announcements));
+      res.status(200).send({ announcements });
+    });
   } catch (error) {
     res.status(500).send();
   }
