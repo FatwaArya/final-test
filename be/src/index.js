@@ -5,11 +5,13 @@ const { hrRouter } = require("./routes/hr");
 const { menuRouter } = require("./routes/menu");
 const { emailNotif } = require("./shedule/email");
 const { redisConnection } = require("./db/redis");
+const Announcement = require("./model/announcement");
 require("dotenv").config({ path: "./.env" });
 require("./db/mongoose");
 
 redisConnection();
 //seed menu data
+Announcement.watch().on("change", (data) => console.log(data));
 
 const cors = require("cors");
 

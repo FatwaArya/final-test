@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import axios from "axios";
+import { Link } from "react-router-dom";
 
 export default function Dashboard() {
   const { userToken } = useSelector((state) => state);
@@ -55,12 +56,12 @@ export default function Dashboard() {
                     >
                       Date
                     </th>
-                    <th
+                    {/* <th
                       scope="col"
-                      className="relative py-3.5 pl-3 pr-4 sm:pr-6"
+                      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
                     >
-                      <span className="sr-only">Edit</span>
-                    </th>
+                      Detail
+                    </th> */}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
@@ -90,12 +91,12 @@ export default function Dashboard() {
                         }
                       </td>
                       <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                        <a
-                          href="#"
+                        <Link
+                          to=""
                           className="text-indigo-600 hover:text-indigo-900"
                         >
-                          Edit<span className="sr-only">, hehe</span>
-                        </a>
+                          See more<span className="sr-only">, hehe</span>
+                        </Link>
                       </td>
                     </tr>
                   ))}

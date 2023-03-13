@@ -10,10 +10,16 @@ export default function Register() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { error, success } = useSelector((state) => state);
+  const { userInfo } = useSelector((state) => state);
+
+  useEffect(() => {
+    if (userInfo) {
+      navigate("/dashboard");
+    }
+  }, [userInfo]);
   const handleSubmit = (e) => {
     e.preventDefault();
     dispatch(register({ email, password, name }));
-    navigate("/dashboard");
   };
 
   return (
