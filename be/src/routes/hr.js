@@ -176,7 +176,7 @@ router.get("/overtime", auth, async (req, res) => {
     res.status(500).send();
   }
 });
-
+//test redis
 //get reimbursment history
 router.get("/reimbursment", auth, async (req, res) => {
   //check if hr
@@ -209,7 +209,7 @@ router.get("/attendance", auth, async (req, res) => {
   try {
     await redisClient.get("attendance-history", async (err, result) => {
       if (err) return res.status(500).send({ error: err.message });
-      if (result) return res.send(JSON.parse(result));
+      if (result.length < 0) return res.send(JSON.parse(result));
       const attendance = await Attendance.find().populate("user");
       redisClient.setex("attendance-history", 3600, JSON.stringify(attendance));
       res.send(attendance);
@@ -287,7 +287,7 @@ router.get("/announcement", auth, async (req, res) => {
   try {
     await redisClient.get("announcement-hr", async (err, result) => {
       if (err) return res.status(500).send({ error: err.message });
-      if (result) return res.send(JSON.parse(result));
+      if (result.length < 0) return res.send(JSON.parse(result));
       const announcement = await Announcement.find();
       redisClient.setex("announcement-hr", 3600, JSON.stringify(announcement));
       res.send(announcement);

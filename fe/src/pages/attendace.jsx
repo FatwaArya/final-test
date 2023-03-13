@@ -51,7 +51,7 @@ export default function Attendance() {
       .post(
         "http://localhost:3000/users/attendance",
         {
-          time_out: new Date().toLocaleTimeString(),
+          time_out: new Date(),
         },
         {
           headers: {
@@ -86,7 +86,7 @@ export default function Attendance() {
 
       <dl className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-3">
         {/* {stats.map((item) => ( */}
-        <div className="px-4 py-5 bg-white shadow rounded-lg overflow-hidden sm:p-6">
+        <div className="px-4 py-5 bg-white shadow rounded-lg overflow-hidden sm:p-6 col-span-1.5">
           <dt className="text-sm font-medium text-gray-500 truncate">
             {/* {item.name} */}
             Morning Attendance
@@ -102,7 +102,7 @@ export default function Attendance() {
           </dd>
         </div>
 
-        <div className="px-4 py-5 bg-white shadow rounded-lg overflow-hidden sm:p-6">
+        <div className="px-4 py-5 bg-white shadow rounded-lg overflow-hidden sm:p-6 col-span-1.5">
           <dt className="text-sm font-medium text-gray-500 truncate">
             {/* {item.name} */}
             Evening Attendance
@@ -118,7 +118,7 @@ export default function Attendance() {
           </dd>
         </div>
 
-        <div className="px-4 py-5 bg-white shadow rounded-lg overflow-hidden sm:p-6">
+        <div className="px-4 py-5 bg-white shadow rounded-lg overflow-hidden sm:p-6 col-span-3 md:col-span-1">
           <dt className="text-sm font-medium text-gray-500 truncate">
             {/* {item.name} */}
             Todays Attendance Status

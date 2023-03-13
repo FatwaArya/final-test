@@ -149,13 +149,13 @@ router.post("/users/reimbursment", auth, async (req, res) => {
 //get attendance
 router.get("/users/attendance", auth, async (req, res) => {
   try {
-    await redisClient.get("attendance", async (err, result) => {
-      if (err) return res.status(500).send({ error: err.message });
-      if (result) return res.status(200).send(JSON.parse(result));
-      const attendance = await Attendance.find({ user: req.user._id });
-      redisClient.setex("attendance", 3600, JSON.stringify(attendance));
-      res.status(200).send({ attendance });
-    });
+    // await redisClient.get("attendance", async (err, result) => {
+    //   if (err) return res.status(500).send({ error: err.message });
+    //   if (result) return res.status(200).send(JSON.parse(result));
+    const attendance = await Attendance.find({ user: req.user._id });
+    // redisClient.setex("attendance", 3600, JSON.stringify(attendance));
+    res.status(200).send(attendance);
+    // });
   } catch (error) {
     res.status(500).send();
   }
@@ -172,9 +172,16 @@ router.post("/users/attendance", auth, async (req, res) => {
         $lt: new Date(new Date().setHours(23, 59, 59)),
       },
     });
-    if (attendance) {
+    if (attendance && attendance.time_in && attendance.time_out) {
       return res.status(400).send({ error: "Attendance already taken" });
     }
+    //if time in is not empty, time out must be empty
+    if (attendance && attendance.time_in && !attendance.time_out) {
+      attendance.time_out = time_out;
+      await attendance.save();
+      return res.status(201).send({ attendance });
+    }
+
     const attendanceRequest = new Attendance({
       user: req.user._id,
       time_in: time_in,
@@ -193,13 +200,12 @@ router.post("/users/attendance", auth, async (req, res) => {
 router.get("/users/overtime", auth, async (req, res) => {
   try {
     await redisClient.get("overtime-employee", async (err, result) => {
-      if (result) {
+      if (result.length < 0) {
         return res.status(200).send(JSON.parse(result));
       }
-
       const overtime = await Overtime.find({ user: req.user._id });
       redisClient.setex("overtime-employee", 3600, JSON.stringify(overtime));
-      res.status(200).send({ overtime });
+      res.status(200).send(overtime);
     });
   } catch (error) {
     res.status(500).send();
@@ -209,22 +215,21 @@ router.get("/users/overtime", auth, async (req, res) => {
 //get reimbursment history
 router.get("/users/reimbursment", auth, async (req, res) => {
   try {
+    //cache
     await redisClient.get("reimbursment-employee", async (err, result) => {
-      if (err) return res.status(500).send({ error: err.message });
-      if (result) return res.status(200).send(JSON.parse(result));
-      const reimbursment = await Reimbursment.find({
-        user: req.user._id,
-      });
-      console.log(reimbursment);
+      if (result.length < 0) {
+        return res.status(200).send(JSON.parse(result));
+      }
+      const reimbursment = await Reimbursment.find({ user: req.user._id });
       redisClient.setex(
         "reimbursment-employee",
         3600,
         JSON.stringify(reimbursment)
       );
-      res.status(200).send({ reimbursment });
+      res.status(200).send(reimbursment);
     });
   } catch (error) {
-    res.status(500).send();
+    res.status(500).send(error.message);
   }
 });
 
