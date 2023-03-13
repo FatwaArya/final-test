@@ -35,9 +35,7 @@ router.patch("/overtime/:id", auth, async (req, res) => {
     const overtime = await Overtime.findOne({ _id: req.params.id }).populate(
       "user"
     );
-    if (overtime) {
-      return res.status(404).send({ error: "Not found" });
-    }
+
     overtime.status = "approved";
     await overtime.save();
     //send email to employee
@@ -70,9 +68,7 @@ router.patch("/overtime/reject/:id", auth, async (req, res) => {
     const overtime = await Overtime.findOne({ _id: req.params.id }).populate(
       "user"
     );
-    if (overtime) {
-      return res.status(404).send({ error: "Not found" });
-    }
+
     overtime.status = "rejected";
     await overtime.save();
     //send email to employee
@@ -97,6 +93,7 @@ router.patch("/overtime/reject/:id", auth, async (req, res) => {
 //approve reimbursment
 router.patch("/reimbursment/:id", auth, async (req, res) => {
   //check if hr
+  console.log(req.params.id);
   if (req.user.role !== "hr") {
     return res.status(401).send({ error: "Not authorized" });
   }
@@ -104,9 +101,7 @@ router.patch("/reimbursment/:id", auth, async (req, res) => {
     const reimbursment = await Reimbursment.findOne({
       _id: req.params.id,
     }).populate("user");
-    if (reimbursment) {
-      return res.status(404).send({ error: "Not found" });
-    }
+
     reimbursment.status = "approved";
     await reimbursment.save();
     //send email to employee
@@ -118,12 +113,14 @@ router.patch("/reimbursment/:id", auth, async (req, res) => {
     };
     transporter.sendMail(mailOptions, function (error, info) {
       if (error) {
-        console.log(error);
+        console.log(error.message);
       } else {
         res.send({ reimbursment, info });
       }
     });
+    res.send(reimbursment);
   } catch (error) {
+    console.log(error.message);
     res.status(500).send();
   }
 });
@@ -138,9 +135,7 @@ router.patch("/reimbursment/reject/:id", auth, async (req, res) => {
     const reimbursment = await Reimbursment.findOne({
       _id: req.params.id,
     }).populate("user");
-    if (reimbursment) {
-      return res.status(404).send({ error: "Not found" });
-    }
+
     reimbursment.status = "rejected";
     await reimbursment.save();
     //send email to employee
@@ -169,7 +164,7 @@ router.get("/overtime", auth, async (req, res) => {
     return res.status(401).send({ error: "Not authorized" });
   }
   try {
-    const overtime = await Overtime.find();
+    const overtime = await Overtime.find().populate("user");
     res.send(overtime);
   } catch (error) {
     res.status(500).send();
@@ -183,7 +178,7 @@ router.get("/reimbursment", auth, async (req, res) => {
     return res.status(401).send({ error: "Not authorized" });
   }
   try {
-    const reimbursment = await Reimbursment.find();
+    const reimbursment = await Reimbursment.find().populate("user");
     res.send(reimbursment);
   } catch (error) {
     res.status(500).send();

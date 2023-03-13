@@ -4,20 +4,7 @@ import { Navigate, Outlet } from "react-router-dom";
 
 function Authenticated() {
   const { userInfo } = useSelector((state) => state);
-  const isExpired = () => {
-    const now = new Date();
-    const exp = new Date(userInfo?.exp * 1000);
-    return now > exp;
-  };
-
-  useEffect(() => {
-    if (!userInfo || isExpired()) {
-      <Navigate to="/" />;
-    }
-
-    return () => {};
-  }, [userInfo, isExpired]);
-  return <Outlet />;
+  return userInfo ? <Outlet /> : <Navigate to="/" />;
 }
 
 export default Authenticated;

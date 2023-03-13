@@ -12,6 +12,7 @@ import Overtime from "./pages/overtime";
 import Register from "./pages/register";
 import Announcement from "./pages/announcement";
 import RequireRole from "./components/requireRole";
+import Approval from "./pages/approval";
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
 
             <Route element={<RequireRole role="hr" />}>
               <Route path="/announcements/create" element={<Announcement />} />
+              <Route path="/approval" element={<Approval />} />
             </Route>
           </Route>
         </Route>
