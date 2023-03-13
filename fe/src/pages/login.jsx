@@ -10,13 +10,17 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { userInfo } = useSelector((state) => state);
 
-  const { error, success } = useSelector((state) => state);
-  console.log(success);
+  useEffect(() => {
+    if (userInfo) {
+      navigate("/dashboard");
+    }
+  }, [userInfo]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     dispatch(login({ email, password }));
-    navigate("/dashboard", { replace: true });
   };
 
   return (

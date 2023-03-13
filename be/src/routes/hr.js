@@ -184,7 +184,7 @@ router.get("/reimbursment", auth, async (req, res) => {
     return res.status(401).send({ error: "Not authorized" });
   }
   try {
-    redisClient.get("reimbursment-history", async (err, result) => {
+    await redisClient.get("reimbursment-history", async (err, result) => {
       if (err) return res.status(500).send({ error: err.message });
       if (result) return res.send(JSON.parse(result));
       const reimbursment = await Reimbursment.find().populate("user");
@@ -207,7 +207,7 @@ router.get("/attendance", auth, async (req, res) => {
     return res.status(401).send({ error: "Not authorized" });
   }
   try {
-    redisClient.get("attendance-history", async (err, result) => {
+    await redisClient.get("attendance-history", async (err, result) => {
       if (err) return res.status(500).send({ error: err.message });
       if (result) return res.send(JSON.parse(result));
       const attendance = await Attendance.find().populate("user");
@@ -285,7 +285,7 @@ router.get("/announcement", auth, async (req, res) => {
     return res.status(401).send({ error: "Not authorized" });
   }
   try {
-    redisClient.get("announcement-hr", async (err, result) => {
+    await redisClient.get("announcement-hr", async (err, result) => {
       if (err) return res.status(500).send({ error: err.message });
       if (result) return res.send(JSON.parse(result));
       const announcement = await Announcement.find();
