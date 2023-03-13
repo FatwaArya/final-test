@@ -16,12 +16,12 @@ const upload = multer({
   limits: {
     fileSize: 5000000,
   },
-  fileFilter(req, file, cb) {
-    if (file.originalname.match(/\.(xlsx)$/)) {
-      return cb(new Error("Please upload an excel file"));
-    }
-    cb(undefined, true);
-  },
+  // fileFilter(req, file, cb) {
+  //   if (file.originalname.match(/\.(xlsx)$/)) {
+  //     return cb(new Error("Please upload an excel file"));
+  //   }
+  //   cb(undefined, true);
+  // },
   dest: "uploads",
 });
 
@@ -219,26 +219,32 @@ router.get("/employee", auth, async (req, res) => {
 });
 
 //upload announcement
-router.post("/announcement/file", upload.single("file"), async (req, res) => {
-  //   if (req.user.role !== "hr") {
-  //     return res.status(401).send({ error: "Not authorized" });
-  //   }
-  try {
-    const workbook = xlsx.readFile(req.file.path);
-    const sheetName = workbook.SheetNames[0];
-    const sheetData = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
-    sheetData.forEach(async (data) => {
-      const announcement = new Announcement({
-        ...data,
+router.post(
+  "/announcement/file",
+  upload.single("file"),
+  auth,
+  async (req, res) => {
+    //   if (req.user.role !== "hr") {
+    //     return res.status(401).send({ error: "Not authorized" });
+    //   }
+    try {
+      console.log(req.file);
+      const workbook = xlsx.readFile(req.file.path);
+      const sheetName = workbook.SheetNames[0];
+      const sheetData = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
+      sheetData.forEach(async (data) => {
+        const announcement = new Announcement({
+          ...data,
+        });
+        await announcement.save();
       });
-      await announcement.save();
-    });
-    res.send(sheetData);
-  } catch (error) {
-    console.log(error);
-    res.status(500).send();
+      res.send(sheetData);
+    } catch (error) {
+      console.log(error.message);
+      res.status(500).send();
+    }
   }
-});
+);
 
 //crud announcement
 router.post("/announcement", auth, async (req, res) => {
@@ -253,6 +259,7 @@ router.post("/announcement", auth, async (req, res) => {
     await announcement.save();
     res.send(announcement);
   } catch (error) {
+    console.log(error.message);
     res.status(500).send();
   }
 });

@@ -10,6 +10,8 @@ import Attendance from "./pages/attendace";
 import Reimbursement from "./pages/Reimbursement";
 import Overtime from "./pages/overtime";
 import Register from "./pages/register";
+import Announcement from "./pages/announcement";
+import RequireRole from "./components/requireRole";
 
 function App() {
   return (
@@ -24,6 +26,10 @@ function App() {
             <Route path="/reimbursement" element={<Reimbursement />} />
             <Route path="/attendance" element={<Attendance />} />
             <Route path="/overtime" element={<Overtime />} />
+
+            <Route element={<RequireRole role="hr" />}>
+              <Route path="/announcements/create" element={<Announcement />} />
+            </Route>
           </Route>
         </Route>
       </Routes>

@@ -83,15 +83,7 @@ export default function Overtime() {
           onSubmit={handleSubmit}
         >
           <div className="space-y-8 divide-y divide-gray-200">
-            <div className="pt-8">
-              <div>
-                <h3 className="text-lg leading-6 font-medium text-gray-900">
-                  Personal Information
-                </h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  Use a permanent address where you can receive mail.
-                </p>
-              </div>
+            <div className="">
               <div className="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                 <div className="sm:col-span-3">
                   <label

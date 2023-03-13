@@ -1,24 +1,23 @@
 import React, { useEffect } from "react";
 import { useSelector } from "react-redux";
 import { Navigate, Outlet } from "react-router-dom";
-import jwtDecode from "jwt-decode";
-import Cookies from "js-cookie";
 
 function Authenticated() {
-  const { userToken } = useSelector((state) => state);
-  const isExpired = (token) => {
-    const decoded = jwtDecode(token);
-    const currentTime = Date.now() / 1000;
-    return decoded.exp < currentTime;
+  const { userInfo } = useSelector((state) => state);
+  const isExpired = () => {
+    const now = new Date();
+    const exp = new Date(userInfo?.exp * 1000);
+    return now > exp;
   };
 
   useEffect(() => {
-    if (isExpired(userToken)) {
-      Cookies.remove("token");
+    if (!userInfo || isExpired()) {
+      <Navigate to="/" />;
     }
-  }, [userToken]);
 
-  return userToken ? <Outlet /> : <Navigate to="/" />;
+    return () => {};
+  }, [userInfo, isExpired]);
+  return <Outlet />;
 }
 
 export default Authenticated;

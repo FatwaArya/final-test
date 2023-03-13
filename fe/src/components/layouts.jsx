@@ -4,7 +4,13 @@ import axios from "axios";
 import { Dialog, Transition } from "@headlessui/react";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../store/slices/user";
-import { Link, Outlet, useNavigate, useLocation } from "react-router-dom";
+import {
+  Link,
+  Outlet,
+  useNavigate,
+  useLocation,
+  Navigate,
+} from "react-router-dom";
 import Cookies from "js-cookie";
 import {
   CalendarIcon,
@@ -47,17 +53,25 @@ function classNames(...classes) {
 export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [navigation, setNavigation] = useState([]);
-  const { userInfo } = useSelector((state) => state);
+  const { userInfo, success } = useSelector((state) => state);
   const { userToken } = useSelector((state) => state);
+
   const navigate = useNavigate();
   const asPath = useLocation();
   const token = Cookies.get("token");
+  const dispatch = useDispatch();
   //if jwt is not set, or is expired, redirect to login
+  // useEffect(() => {
+  //   if (token === undefined) {
+  //     navigate("/");
+  //   }
+  // }, [token]);
   useEffect(() => {
-    if (token === undefined) {
-      navigate("/login");
+    if (!userInfo) {
+      return <Navigate to="/" />;
     }
-  }, [token]);
+  }, [userInfo]);
+
   useEffect(() => {
     async function getNavigation() {
       console.log(userToken);
@@ -72,6 +86,13 @@ export default function Layout() {
         if (asPath.pathname === item.link) {
           item.current = true;
         }
+      });
+      //add Sign Out
+      result.push({
+        name: "Sign Out",
+        icon: "ArrowLeftOnRectangleIcon",
+        link: "/",
+        current: false,
       });
 
       setNavigation(result);
@@ -161,7 +182,7 @@ export default function Layout() {
                         )}
                         onClick={() => {
                           if (item.name === "Sign Out") {
-                            dispatch(logout());
+                            dispatch(logout({ userToken }));
                           }
                         }}
                       >
@@ -233,7 +254,7 @@ export default function Layout() {
                     )}
                     onClick={() => {
                       if (item.name === "Sign Out") {
-                        dispatch(logout());
+                        dispatch(logout({ userToken }));
                       }
                     }}
                   >
@@ -272,12 +293,9 @@ export default function Layout() {
                       alt=""
                     />
                   </div>
-                  <div className="ml-3">
+                  <div className="ml-3 grid grid-cols-2">
                     <p className="text-sm font-medium text-gray-700 group-hover:text-gray-900">
                       {userInfo.name}
-                    </p>
-                    <p className="text-xs font-medium text-gray-500 group-hover:text-gray-700">
-                      View profile
                     </p>
                   </div>
                 </div>

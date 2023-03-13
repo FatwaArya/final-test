@@ -69,7 +69,7 @@ router.post("/users/logout", auth, async (req, res) => {
       return token.token !== req.token;
     });
     await req.user.save();
-    res.send();
+    res.status(200).send();
   } catch (error) {
     res.status(500).send();
   }
@@ -216,7 +216,9 @@ router.get("/users/attendance", auth, async (req, res) => {
 //get announcement
 router.get("/users/announcements", auth, async (req, res) => {
   try {
-    const announcement = await Announcement.find();
+    //sort by date
+    const announcement = await Announcement.find({}).sort({ createdAt: -1 });
+
     res.send(announcement);
   } catch (error) {
     res.status(500).send();

@@ -1,5 +1,5 @@
 import { useState, React } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { login } from "../store/slices/user";
 import { useEffect } from "react";
@@ -10,18 +10,14 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { error, success } = useSelector((state) => state);
 
+  const { error, success } = useSelector((state) => state);
+  console.log(success);
   const handleSubmit = (e) => {
     e.preventDefault();
     dispatch(login({ email, password }));
+    navigate("/dashboard", { replace: true });
   };
-
-  useEffect(() => {
-    if (success) {
-      navigate("/dashboard");
-    }
-  }, [success, navigate]);
 
   return (
     <>

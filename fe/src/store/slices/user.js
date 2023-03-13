@@ -7,8 +7,8 @@ const BASE_URl = "http://localhost:3000";
 export const login = createAsyncThunk("users/login", async (data, thunkAPI) => {
   try {
     const response = await axios.post(`${BASE_URl}/users/login`, data);
+    Cookies.set("token", response.data.token, { expires: 1 });
 
-    Cookies.set("token", response.data.token);
     return response.data;
   } catch (error) {
     return thunkAPI.rejectWithValue(error.response.data);
@@ -20,7 +20,7 @@ export const register = createAsyncThunk(
   async (data, thunkAPI) => {
     try {
       const response = await axios.post(`${BASE_URl}/users`, data);
-      Cookies.set("token", response.data.token);
+
       return response.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(error.response.data);
@@ -32,9 +32,17 @@ export const logout = createAsyncThunk(
   "users/logout",
   async (data, thunkAPI) => {
     try {
-      const response = await axios.post(`${BASE_URl}/users/logout`);
-      Cookies.remove("token", { path: "/", domain: "localhost" });
-      return response.data;
+      const response = await axios.post(
+        `${BASE_URl}/users/logout`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${Cookies.get("token")}`,
+          },
+        }
+      );
+      Cookies.remove("token");
+      return "logout success";
     } catch (error) {
       return thunkAPI.rejectWithValue(error.response.data);
     }
@@ -43,8 +51,8 @@ export const logout = createAsyncThunk(
 
 const initialState = {
   loading: false,
-  userInfo: null,
-  userToken: null,
+  userInfo: Cookies.get("token") ? jwt_decode(Cookies.get("token")) : null,
+  userToken: Cookies.get("token") ? Cookies.get("token") : null,
   error: null,
   success: false,
 };
@@ -78,6 +86,7 @@ const userSlice = createSlice({
       state.loading = false;
       state.userInfo = action.payload.user;
       state.userToken = action.payload.token;
+      Cookies.set("token", action.payload.token, { expires: 1 });
       state.success = true;
     },
     [register.rejected]: (state, action) => {
